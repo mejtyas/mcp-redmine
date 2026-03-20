@@ -1,0 +1,5 @@
+# Standalone MCP image (no diego / main app requirements).
+fastmcp>=2.0,<3
+langchain-core>=0.3.0
+requests>=2.25.0
+typing-extensions>=4.0.0
