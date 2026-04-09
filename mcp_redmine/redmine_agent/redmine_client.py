@@ -122,6 +122,39 @@ class RedmineClient:
 
         return all_items
 
+    def rest_json(
+        self,
+        method: str,
+        endpoint: str,
+        username: str | None = None,
+        data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+        impersonate: bool = True,
+    ) -> dict[str, Any]:
+        """Low-level JSON REST call. ``endpoint`` must start with ``/``."""
+        ep = endpoint.strip()
+        if not ep.startswith("/"):
+            raise ValueError("endpoint must start with /")
+        return self._make_request(
+            method.upper(), ep, username, data=data, params=params, impersonate=impersonate
+        )
+
+    def paginate_json(
+        self,
+        endpoint: str,
+        collection_key: str,
+        username: str | None = None,
+        params: dict[str, Any] | None = None,
+        impersonate: bool = True,
+    ) -> list[dict]:
+        """Fetch all pages for a GET collection endpoint (e.g. ``issues``, ``users``)."""
+        ep = endpoint.strip()
+        if not ep.startswith("/"):
+            raise ValueError("endpoint must start with /")
+        return self._fetch_paginated(
+            ep, username, collection_key=collection_key, params=params, impersonate=impersonate
+        )
+
     def get_users(self, username: str | None = None) -> list[dict]:
         return self._fetch_paginated(
             "/users.json", username, collection_key="users", impersonate=False

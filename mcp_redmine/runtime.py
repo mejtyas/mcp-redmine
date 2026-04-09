@@ -11,8 +11,8 @@ from .redmine_agent.redmine_client import RedmineClient
 from .redmine_agent.tools_langchain import build_langchain_tools
 
 
-def build_tool_map() -> dict[str, BaseTool]:
-    """Instantiate RedmineClient and return LangChain tools by name."""
+def build_runtime() -> tuple[dict[str, BaseTool], RedmineClient]:
+    """Instantiate RedmineClient and return LangChain tools by name plus the shared client."""
     url = os.environ.get("REDMINE_URL", "").strip()
     key = os.environ.get("REDMINE_API_KEY", "").strip()
     if not url or not key:
@@ -30,4 +30,9 @@ def build_tool_map() -> dict[str, BaseTool]:
         return session_cache
 
     tools = build_langchain_tools(redmine, get_username, get_cache=get_cache)
-    return {t.name: t for t in tools}
+    return {t.name: t for t in tools}, redmine
+
+
+def build_tool_map() -> dict[str, BaseTool]:
+    """Return LangChain tools by name (same client instance as :func:`build_runtime`)."""
+    return build_runtime()[0]
