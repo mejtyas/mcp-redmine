@@ -41,6 +41,33 @@ docker run --rm -i \
   mejtyas/mcp-redmine:latest
 ```
 
+## Company HTTPS deployment (Cursor `url`)
+
+For a shared host (for example `https://mcp-redmine.example.com/mcp`), the server can keep **one company Redmine URL** and require a **shared gate token** plus **each developer’s Redmine API key** on every HTTP request.
+
+1. **Redmine URL** — either set `REDMINE_URL` in the container environment, or set `COMPANY_REDMINE_URL` in `mcp_redmine/config.py` (used when `REDMINE_URL` is unset).
+2. **Server environment** (deployment / GitLab CI variables, not in `mcp.json`):
+   - `MCP_TRANSPORT` — `streamable-http` (recommended) or `sse`
+   - `MCP_AUTH_TOKEN` — long random secret shared inside the company (required for HTTP transport)
+   - Optional: `MCP_HOST`, `MCP_PORT` (default `0.0.0.0` / `8000`), `MCP_PATH` (default `/mcp`)
+3. **Cursor** — remote entry with two headers: company gate + personal Redmine key:
+
+```json
+{
+  "mcpServers": {
+    "mcp-redmine": {
+      "url": "https://mcp-redmine.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:MCP_AUTH_TOKEN}",
+        "X-Redmine-API-Key": "${env:REDMINE_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+Use the same header names if you terminate TLS in front of the app; the MCP process must still receive `Authorization: Bearer …` and `X-Redmine-API-Key: …`. Do not commit real tokens.
+
 ## Cursor
 
 Open **Settings → MCP**, or edit `~/.cursor/mcp.json`. Use a top-level **`mcpServers`** object.

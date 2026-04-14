@@ -11,6 +11,8 @@ from typing import Any
 
 import requests
 
+from ..http_auth import get_request_redmine_api_key
+
 
 class RedmineClient:
     """Client for Redmine REST API."""
@@ -21,7 +23,7 @@ class RedmineClient:
         self.base_url = raw.rstrip("/")
 
     def _get_headers(self, username: str | None = None, impersonate: bool = True) -> dict[str, str]:
-        api_key = self.api_key or ""
+        api_key = (get_request_redmine_api_key() or "").strip() or (self.api_key or "")
         headers: dict[str, str] = {"X-Redmine-API-Key": api_key, "Content-Type": "application/json"}
         if impersonate and username:
             headers["X-Redmine-Switch-User"] = username
@@ -367,8 +369,9 @@ class RedmineClient:
         content_type: str = "application/octet-stream",
     ) -> str:
         url = f"{self.base_url}/uploads.json"
+        api_key = (get_request_redmine_api_key() or "").strip() or (self.api_key or "")
         headers: dict[str, str] = {
-            "X-Redmine-API-Key": self.api_key or "",
+            "X-Redmine-API-Key": api_key,
             "Content-Type": content_type,
         }
         if username:

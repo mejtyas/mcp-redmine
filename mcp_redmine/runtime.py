@@ -11,15 +11,18 @@ from .redmine_agent.redmine_client import RedmineClient
 from .redmine_agent.tools_langchain import build_langchain_tools
 
 
-def build_runtime() -> tuple[dict[str, BaseTool], RedmineClient]:
+def build_runtime(*, http_mode: bool = False) -> tuple[dict[str, BaseTool], RedmineClient]:
     """Instantiate RedmineClient and return LangChain tools by name plus the shared client."""
     url = os.environ.get("REDMINE_URL", "").strip()
     key = os.environ.get("REDMINE_API_KEY", "").strip()
-    if not url or not key:
-        msg = "Set REDMINE_URL and REDMINE_API_KEY (or redmine_url / redmine_api_token)."
+    if not url:
+        msg = "Set REDMINE_URL, redmine_url, or COMPANY_REDMINE_URL in mcp_redmine/config.py."
+        raise RuntimeError(msg)
+    if not http_mode and not key:
+        msg = "Set REDMINE_API_KEY (or redmine_api_token) for stdio transport."
         raise RuntimeError(msg)
 
-    redmine = RedmineClient()
+    redmine = RedmineClient(api_key=key if key else None)
     session_cache: dict[str, Any] = {}
 
     def get_username() -> str:

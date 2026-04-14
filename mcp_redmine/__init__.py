@@ -1,1 +1,1 @@
-"""FastMCP stdio server exposing Diego Redmine LangChain tools."""
+"""FastMCP server (stdio or HTTP) exposing Redmine LangChain tools."""
